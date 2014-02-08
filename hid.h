@@ -54,6 +54,7 @@ typedef struct _hid
 	t_clock             *x_clock;
 	t_outlet            *x_data_outlet;
 	t_outlet            *x_status_outlet;
+    unsigned char linux_code_mode;
 } t_hid;
 
 

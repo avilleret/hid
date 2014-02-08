@@ -225,11 +225,21 @@ void hid_output_event(t_hid *x, t_hid_element *output_data)
 		(output_data->relative) )  // relative data should always be output
 	{
 #if 1
+ #if __linux__ 
+		if( x->linux_code_mode ){
+		t_atom event_data[2];
+		SETFLOAT(event_data, output_data->linux_code);
+		SETFLOAT(event_data + 1, output_data->value);
+		outlet_anything(x->x_data_outlet,output_data->type,2,event_data);
+		} else
+ #endif
+		{
 		// this is [hid] compatible
 		t_atom event_data[2];
 		SETSYMBOL(event_data, output_data->name);
 		SETFLOAT(event_data + 1, output_data->value);
 		outlet_anything(x->x_data_outlet,output_data->type,2,event_data);
+		}
 #else
 		// this outputs instance number, for [hid] v2
 		t_atom event_data[3];
@@ -281,6 +291,15 @@ void hid_poll(t_hid* x, t_float f)
 		} 
 	}
 }
+
+void hid_linux_code_mode(t_hid* x, t_float f) {
+#if __linux__
+	x->linux_code_mode=f>0;
+#else
+	error("linux_code_mode only supported on Linux");
+#endif
+}
+
 
 static void hid_set_from_float(t_hid *x, t_floatarg f)
 {
@@ -498,6 +517,7 @@ void hid_setup(void)
 	class_addmethod(hid_class,(t_method) hid_open,gensym("open"),A_GIMME,0);
 	class_addmethod(hid_class,(t_method) hid_close,gensym("close"),0);
 	class_addmethod(hid_class,(t_method) hid_poll,gensym("poll"),A_DEFFLOAT,0);
+	class_addmethod(hid_class,(t_method) hid_linux_code_mode,gensym("linux_code_mode"),A_DEFFLOAT,0);
    /* force feedback messages */
 	class_addmethod(hid_class,(t_method) hid_ff_autocenter,
 						 gensym("ff_autocenter"),A_DEFFLOAT,0);
